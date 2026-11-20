@@ -378,8 +378,13 @@ function build(tex){
   const mk = (idx) => {
     const d = document.createElement('div'); d.className = 'piece';
     const c = svg.cloneNode(true);
-    c.style.visibility = idx < 0 ? 'visible' : 'hidden';
-    pieceGroups(c).forEach((g, i) => { g.style.visibility = (i === idx) ? 'visible' : 'hidden'; });
+    // Safari does not draw a visible group inside a hidden <svg>: so each piece hides everything around it instead.
+    const gs = pieceGroups(c), t = gs[idx];
+    if (!t) gs.forEach(g => { g.style.visibility = 'hidden'; });
+    else {
+      gs.forEach(g => { if (g !== t && t.contains(g)) g.style.visibility = 'hidden'; });
+      for (let n = t; n !== c; n = n.parentNode) [...n.parentNode.children].forEach(s => { if (s !== n) s.style.visibility = 'hidden'; });
+    }
     d.appendChild(c); box.appendChild(d); return d;
   };
   const pieces = {};
