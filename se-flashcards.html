@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcards SE</title>
+<style>
+:root {
+  --bg: #f6f5f2; --card: #ffffff; --ink: #1b1b1b; --soft: #5d5d5d; --line: #dcd9d2;
+  --ok: #17703f; --ko: #b42318; --accent: #1d5fa6;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #15171a; --card: #1f2226; --ink: #ececec; --soft: #a3a3a3; --line: #34383d;
+          --ok: #4fbf7f; --ko: #ef6b5f; --accent: #6aa5e8; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif; background: var(--bg); color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; padding: 16px;
+}
+.wrap { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+h1 { font-size: 20px; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px;
+  padding: 6px 12px; font-size: 14px; cursor: pointer;
+}
+.chip.on { border-color: var(--accent); background: var(--accent); color: #fff; }
+.stat { font-size: 14px; color: var(--soft); display: flex; justify-content: space-between; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > div { height: 100%; width: 0; background: var(--ok); transition: width .25s; }
+.card {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 22px 22px 26px;
+  min-height: 260px; cursor: pointer; display: flex; flex-direction: column; gap: 14px; user-select: none;
+}
+.bloc { font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--accent); }
+.q { font-size: 21px; font-weight: 600; line-height: 1.35; }
+.a { font-size: 18px; line-height: 1.5; border-top: 1.5px dashed var(--line); padding-top: 14px; display: none; }
+.a b { color: var(--accent); }
+.card.flip .a { display: block; }
+.hint { font-size: 13px; color: var(--soft); margin-top: auto; }
+.card.flip .hint { display: none; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+button.big {
+  font: inherit; font-size: 17px; font-weight: 600; padding: 14px; border-radius: 12px; border: 0; cursor: pointer; color: #fff;
+}
+.ko { background: var(--ko); } .ok { background: var(--ok); }
+button.big:disabled { opacity: .35; cursor: default; }
+.end { text-align: center; display: none; flex-direction: column; gap: 12px; padding: 30px 0; }
+.end.show { display: flex; }
+.end p { font-size: 18px; margin: 0; }
+.link { font: inherit; background: none; border: 1.5px solid var(--line); color: var(--ink); padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.keys { font-size: 12px; color: var(--soft); text-align: center; }
+.mlink { font-size: 14px; font-weight: 600; margin-left: 10px; color: var(--accent); text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 2px 10px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Flashcards SE <a class="mlink" href="se-memo.html">Le mémo</a></h1>
+  <div class="chips" id="chips"></div>
+  <div class="stat"><span id="pos"></span><span id="score"></span></div>
+  <div class="bar"><div id="bar"></div></div>
+
+  <div class="card" id="card">
+    <div class="bloc" id="bloc"></div>
+    <div class="q" id="q"></div>
+    <div class="a" id="a"></div>
+    <div class="hint">Réponds dans ta tête, puis touche la carte pour voir la réponse.</div>
+  </div>
+
+  <div class="btns" id="btns">
+    <button class="big ko" id="ko" disabled>À revoir</button>
+    <button class="big ok" id="okb" disabled>Je savais</button>
+  </div>
+
+  <div class="end" id="end">
+    <p id="endtxt"></p>
+    <button class="link" id="again">Refaire seulement les ratées</button>
+    <button class="link" id="restart">Tout recommencer</button>
+  </div>
+
+  <div class="keys">Clavier : espace = retourner · flèche droite = je savais · flèche gauche = à revoir</div>
+</div>
+
+<script>
+var CARDS = [
+ // ---------- Exercice ----------
+ ["Exercice","Pour chaque algorithme, quel est l'ordre de travail ?","Gantt → T<sub>i</sub> → T̄ → W<sub>i</sub> → W̄ → débit → rendement du CPU."],
+ ["Exercice","FCFS : qui passe ? Coupe-t-il ?","Le <b>premier arrivé</b>. Non préemptif : jamais coupé."],
+ ["Exercice","SJF : qui passe ? Coupe-t-il ?","La <b>plus courte durée</b> parmi ceux arrivés. Non préemptif : jamais coupé."],
+ ["Exercice","SRTF : qui passe ? Coupe-t-il ?","Le plus court <b>temps restant</b>. Préemptif : un nouveau plus court coupe celui en cours."],
+ ["Exercice","Priorité non préemptive : qui passe ?","La <b>plus haute priorité</b> (1, ou Critique). Celui qui tourne n'est jamais coupé."],
+ ["Exercice","Priorité préemptive : qui passe ?","La plus haute priorité, et elle <b>coupe</b> le processus en cours dès qu'elle arrive."],
+ ["Exercice","RR (quantum q) : comment ça marche ?","On suit la file ; chacun tourne <b>q secondes au plus</b>, puis repart <b>en fin de file</b>. Préemptif."],
+ ["Exercice","Quels algorithmes sont préemptifs ?","<b>SRTF, priorité préemptive, RR</b>. Les autres (FCFS, SJF, priorité non préemptive) sont non préemptifs."],
+ ["Exercice","Deux processus ont la même priorité : que se passe-t-il ?","Le <b>premier arrivé</b> passe, et un égal ne coupe jamais celui qui tourne."],
+ ["Exercice","Formule du temps de rotation T<sub>i</sub> ?","T<sub>i</sub> = F<sub>i</sub> − A<sub>i</sub> : la <b>fin moins l'arrivée</b>."],
+ ["Exercice","Formule du temps d'attente W<sub>i</sub> ?","W<sub>i</sub> = T<sub>i</sub> − C<sub>i</sub> : la <b>rotation moins la durée</b>."],
+ ["Exercice","T̄ et W̄ : somme ou moyenne ?","La <b>moyenne</b> : la somme divisée par n."],
+ ["Exercice","Comment calculer le débit ?","Le nombre de processus <b>terminés avant T<sub>obs</sub></b>, divisé par T<sub>obs</sub>. On trace un trait à T<sub>obs</sub>."],
+ ["Exercice","Comment calculer le rendement du CPU ?","Le <b>temps où le CPU travaille</b> entre 0 et T<sub>obs</sub>, divisé par T<sub>obs</sub>."],
+ ["Exercice","Le CPU tombe à 82 % pendant un processus de 2 s. Combien dure-t-il ?","On <b>divise</b> : 2 ÷ 0,82 ≈ 2,44 s. On ne multiplie jamais."],
+ ["Exercice","RR : dans quel ordre passent les processus ?","Dans l'ordre d'<b>entrée dans la file</b>, pas d'arrivée en RAM. Un processus coupé repart au bout à cet instant."],
+ ["Exercice","RR : un processus finit avant la fin de son quantum. Et ensuite ?","Il quitte la file et <b>le suivant démarre aussitôt</b>. Pas de temps perdu."],
+
+ // ---------- Bases ----------
+ ["Bases","Qu'est-ce qu'un système d'exploitation ?","Un <b>logiciel fondamental</b> (ensemble de programmes) qui gère les ressources <b>matérielles et logicielles</b> de l'ordinateur."],
+ ["Bases","Les 3 rôles du SE ? (GIS)","<b>G</b>érer et coordonner les ressources sans conflit ; servir d'<b>I</b>nterface entre l'utilisateur et le matériel ; assurer la <b>S</b>écurité et le contrôle d'accès."],
+ ["Bases","Qu'est-ce que le BIOS ?","Un <b>programme stocké en ROM</b> sur la carte mère, le <b>premier exécuté</b> au démarrage : tests (POST), initialisation des périphériques, chargeur d'amorçage, puis il passe la main au SE."],
+ ["Bases","Le SE est-il le premier programme exécuté au démarrage ?","<b>Non</b>, c'est le BIOS."],
+ ["Bases","Qu'est-ce que l'UAL (unité de traitement) ?","Les circuits qui font les opérations <b>arithmétiques et logiques</b> : addition, soustraction, ET, OU."],
+ ["Bases","Qu'est-ce que l'unité de commande ?","Elle <b>lit</b> les instructions en mémoire, les <b>décode</b>, les <b>fait exécuter</b> par l'UAL, puis passe à la suivante (fetch-decode-execute)."],
+ ["Bases","Qu'est-ce qu'un registre ?","Une <b>petite mémoire à l'intérieur du CPU</b>, très rapide. Exemple : le compteur de programme (adresse de la prochaine instruction)."],
+ ["Bases","Qu'est-ce que le cache ?","Une petite mémoire très rapide, près du CPU, qui garde les données déjà utilisées. (Cité dans le cours, pas défini.)"],
+ ["Bases","À quoi sert l'horloge ?","Elle <b>contrôle et synchronise</b> le microprocesseur ; sa fréquence est en MHz (millions de cycles par seconde)."],
+ ["Bases","Les 3 bus ? (quoi, où, comment)","<b>Données</b> : transporte données et instructions, bidirectionnel. <b>Adresse</b> : l'adresse de la case voulue, unidirectionnel, n fils → 2<sup>n</sup> cases. <b>Commande</b> : synchronise (lecture, écriture, interruptions)."],
+ ["Bases","Qu'est-ce qu'un hyperviseur ? Ses 2 types ?","Un logiciel qui exécute un ou plusieurs SE dans une <b>machine virtuelle</b>. Type 1, natif : sur le matériel (Hyper-V). Type 2, hosted : dans un autre SE (VMware Workstation)."],
+ ["Bases","Machine abstraite et machine utilisable ?","Machine abstraite = machine réelle + <b>SE</b>. Machine utilisable = machine abstraite + <b>applications</b>."],
+ ["Bases","Cite 5 qualités d'un SE.","Fiabilité, sécurité, portabilité, efficacité, facilité d'utilisation."],
+
+ // ---------- Modes ----------
+ ["Modes","Qu'est-ce qu'un mode d'exploitation ? Les 4 modes ?","La manière dont le SE <b>organise l'exécution des tâches</b>. Séquentiel, multiprogrammation, temps partagé, temps réel."],
+ ["Modes","Qui choisit le mode d'exploitation ?","Le <b>SE, automatiquement</b>, selon les processus, les priorités et les contraintes de temps. L'utilisateur peut seulement influencer (priorité, mode d'énergie)."],
+ ["Modes","Séquentiel direct ou indirect : la différence ?","Direct : un seul programme à la fois, <b>un humain</b> lance le suivant. Indirect : programmes regroupés en <b>lots</b>, enchaînés <b>automatiquement</b>."],
+ ["Modes","Multiprogrammation classique ?","Plusieurs programmes en mémoire ; quand l'un <b>attend une E/S</b>, le CPU en exécute un autre. Le CPU n'est jamais inactif (le chef cuisinier)."],
+ ["Modes","Multiprogrammation étendue ?","La classique, plus une gestion dynamique de la mémoire (<b>pagination, segmentation</b>) : on ne charge que les parties utiles."],
+ ["Modes","Temps partagé ?","Chaque processus reçoit un <b>quantum</b> ; à la fin, le SE l'interrompt et passe au suivant. Chacun croit tourner en continu."],
+ ["Modes","Multiprogrammation ou temps partagé : la différence ?","Multiprogrammation : on change quand le programme est <b>bloqué</b> (E/S). Temps partagé : on change <b>même s'il n'est pas bloqué</b>, à la fin du quantum."],
+ ["Modes","Temps réel ?","Les tâches doivent finir dans des délais précis : la <b>deadline</b>. Exemples : contrôle d'avion ; FreeRTOS, QNX."],
+
+ // ---------- Architectures ----------
+ ["Architectures","Architecture monolithique ?","Le noyau et tous les services dans <b>un seul programme</b>, en mode noyau, mêmes privilèges. UNIX, MS-DOS."],
+ ["Architectures","Architecture en couches ?","Des niveaux hiérarchiques : chaque couche <b>n'utilise que celle du dessous</b> et sert celle du dessus. THE (Dijkstra)."],
+ ["Architectures","Architecture à micro-noyau ?","Le noyau garde le <b>minimum</b> (ordonnancement, mémoire de base, IPC) ; le reste tourne en <b>espace utilisateur</b>. Minix, QNX."],
+ ["Architectures","Architecture hybride ?","Un monolithique amélioré : <b>la rapidité du monolithique et la fiabilité du micro-noyau</b>. Windows, macOS, Linux moderne."],
+
+ // ---------- Noyau, E/S, interruptions ----------
+ ["Interruptions","Qu'est-ce que le noyau ? (P-M-P-F)","Le <b>cœur du SE</b>, entre le matériel et les logiciels. Il gère les <b>P</b>rocessus, la <b>M</b>émoire, les <b>P</b>ériphériques (par les pilotes), les <b>F</b>ichiers."],
+ ["Interruptions","Qu'est-ce qu'un pilote ?","Un <b>programme</b> qui permet au SE de communiquer avec un <b>périphérique matériel</b>. Exemple : le pilote du clavier."],
+ ["Interruptions","Les 3 modes d'E/S, du plus lourd au plus léger pour le CPU ?","<b>Programmées</b> (le CPU demande), <b>avec interruptions</b> (il est prévenu), <b>DMA</b> (il délègue). La rapidité suit l'ordre inverse."],
+ ["Interruptions","E/S programmées (polling) ?","Le CPU <b>interroge en boucle</b> le périphérique. Simple, mais il gaspille le CPU. Exemple : un ancien clavier."],
+ ["Interruptions","E/S avec interruptions ?","Le périphérique <b>prévient le CPU</b> quand il est prêt ; en attendant, le CPU fait autre chose. Exemple : la carte réseau."],
+ ["Interruptions","Qu'est-ce que le DMA, et comment marche-t-il ?","Un <b>composant matériel</b> qui copie les données entre un périphérique et la mémoire, sans le CPU. Le CPU le prépare → le DMA copie seul → <b>interruption</b> de fin → le CPU vérifie."],
+ ["Interruptions","Qu'est-ce qu'une interruption ? Ses 3 types ?","Un <b>signal</b> au processeur : un événement demande une attention immédiate. Types : <b>matérielle</b> (touche du clavier), <b>logicielle</b> (division par zéro), <b>horloge</b> (ordonnancement)."],
+ ["Interruptions","Les 4 niveaux de priorité des interruptions ?","1 <b>panne</b> critique, 2 <b>horloge</b>, 3 <b>E/S</b>, 4 <b>logicielle</b> (appel système)."],
+ ["Interruptions","Le clavier et le timer en même temps : qui passe ?","Le <b>timer</b> (niveau 2, avant l'E/S au niveau 3)."],
+ ["Interruptions","Les étapes du traitement d'une interruption ? (le marque-page)","Détection → <b>sauvegarde du contexte</b> → exécution de l'ISR → <b>restauration du contexte</b> → reprise du programme."],
+ ["Interruptions","Qu'est-ce que le PIC ? Et une ISR ?","PIC : <b>composant matériel</b> qui reçoit les interruptions, les classe par priorité, les transmet (et peut en masquer). ISR : la <b>routine</b> qui traite l'interruption."],
+ ["Interruptions","Les 5 fonctions du système d'interruptions ?","<b>Réagir</b> (réactivité, priorité), <b>communiquer</b> (matériel/logiciel), <b>trier</b> (le PIC), <b>sauvegarder</b> (le contexte), <b>ordonnancer</b> (l'horloge partage le CPU)."],
+
+ // ---------- Processus ----------
+ ["Processus","Qu'est-ce qu'un processus ?","Une instance d'un <b>programme en cours d'exécution</b>, chargé en mémoire, avec ses propres ressources (registres, mémoire, fichiers ouverts)."],
+ ["Processus","Programme ou processus : la différence ?","Programme : <b>passif</b>, instructions sur le disque, ne consomme rien. Processus : <b>actif</b>, consomme mémoire et CPU. Plusieurs processus pour un même programme."],
+ ["Processus","Qu'est-ce qu'un ordonnanceur ? Un exemple ?","La partie du SE qui choisit <b>quel processus reçoit le CPU, et quand</b>. Il <b>utilise</b> un algorithme : exemple, le Round Robin."],
+ ["Processus","Les 5 états du cycle de vie ? (le guichet)","Création → <b>prêt</b> → exécution → <b>attente</b> → fin."],
+ ["Processus","État prêt ou état attente : la différence ?","Prêt : il attend le <b>CPU</b>. Attente : il attend une <b>ressource</b> ou une E/S."],
+ ["Processus","Qu'est-ce qu'un PCB ? Que contient-il ?","La <b>carte d'identité</b> d'un processus : PID, état, compteur de programme, mémoire, ressources, priorité, temps CPU."],
+ ["Processus","Les 2 files d'attente ?","La file des <b>prêts</b> et la file des <b>bloqués</b>."],
+ ["Processus","Qu'est-ce que la table des processus ?","Elle contient les <b>PCB de tous les processus</b>, rangés par <b>PID</b>. Les files, elles, regroupent certains PCB par état."]
+];
+
+var BLOCS = ["Tout","Exercice","Bases","Modes","Architectures","Interruptions","Processus"];
+var bloc = "Tout", deck = [], i = 0, firstOk = 0, total = 0, missed = [], flipped = false;
+var $ = function (id) { return document.getElementById(id); };
+
+function shuffle(a) { for (var k = a.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = a[k]; a[k] = a[j]; a[j] = t; } return a; }
+
+function start(list) {
+  deck = shuffle(list.map(function (c) { return { c: c, tries: 0 }; }));
+  i = 0; firstOk = 0; total = deck.length; missed = [];
+  $("end").classList.remove("show"); $("card").style.display = ""; $("btns").style.display = "";
+  show();
+}
+function pick(b) {
+  bloc = b; drawChips();
+  start(CARDS.filter(function (c) { return b === "Tout" || c[0] === b; }));
+}
+function drawChips() {
+  $("chips").innerHTML = "";
+  BLOCS.forEach(function (b) {
+    var n = b === "Tout" ? CARDS.length : CARDS.filter(function (c) { return c[0] === b; }).length;
+    var el = document.createElement("button");
+    el.className = "chip" + (b === bloc ? " on" : ""); el.textContent = b + " (" + n + ")";
+    el.onclick = function () { pick(b); };
+    $("chips").appendChild(el);
+  });
+}
+function show() {
+  if (i >= deck.length) return finish();
+  var c = deck[i].c; flipped = false;
+  $("card").classList.remove("flip");
+  $("bloc").textContent = c[0]; $("q").innerHTML = c[1]; $("a").innerHTML = c[2];
+  $("ko").disabled = true; $("okb").disabled = true;
+  $("pos").textContent = "Carte " + Math.min(i + 1, deck.length) + " / " + deck.length;
+  $("score").textContent = "Réussies du premier coup : " + firstOk + " / " + total;
+  $("bar").style.width = (100 * i / deck.length) + "%";
+}
+function flip() {
+  if (i >= deck.length) return;
+  flipped = !flipped; $("card").classList.toggle("flip", flipped);
+  $("ko").disabled = !flipped; $("okb").disabled = !flipped;
+}
+function answer(ok) {
+  if (!flipped || i >= deck.length) return;
+  var d = deck[i];
+  if (ok) { if (d.tries === 0) firstOk++; }
+  else { d.tries++; if (missed.indexOf(d.c) < 0) missed.push(d.c); deck.push({ c: d.c, tries: d.tries }); }
+  i++; show();
+}
+function finish() {
+  $("card").style.display = "none"; $("btns").style.display = "none";
+  $("bar").style.width = "100%";
+  $("pos").textContent = "Terminé"; $("score").textContent = "";
+  $("endtxt").innerHTML = "Réussies du premier coup : <b>" + firstOk + " / " + total + "</b>" +
+    (missed.length ? "<br>" + missed.length + " carte(s) ratée(s) au moins une fois." : "<br>Aucune erreur.");
+  $("again").style.display = missed.length ? "" : "none";
+  $("end").classList.add("show");
+}
+$("card").onclick = flip;
+$("ko").onclick = function () { answer(false); };
+$("okb").onclick = function () { answer(true); };
+$("again").onclick = function () { start(missed.slice()); };
+$("restart").onclick = function () { pick(bloc); };
+document.addEventListener("keydown", function (e) {
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); }
+  else if (e.key === "ArrowRight") answer(true);
+  else if (e.key === "ArrowLeft") answer(false);
+});
+pick("Tout");
+</script>
+</body>
+</html>

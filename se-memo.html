@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SE : mémo de révision</title>
+<style>
+@page { size: A4; margin: 9mm 11mm; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 11pt; line-height: 1.36; color: #1b1b1b; background: #fff;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.page { break-after: page; }
+.recto { font-size: 12.3pt; line-height: 1.42; }
+.recto .card { margin-bottom: 3.8mm; padding: 2mm 4mm 2.4mm; }
+.recto h2 { font-size: 13.5pt; }
+.recto .row { grid-template-columns: 1fr 1.35fr; }
+.page:last-child { break-after: auto; }
+ul { list-style: none; margin: 0; padding: 0; }
+sub, sup { font-size: 0.72em; line-height: 0; }
+
+.algo  { --c: #1d5fa6; --bg: #edf3fb; }
+.form  { --c: #17703f; --bg: #e9f5ed; }
+.base  { --c: #6b3fa0; --bg: #f3eefa; }
+.mode  { --c: #b26a00; --bg: #fdf3e4; }
+.archi { --c: #0f7c86; --bg: #e6f5f6; }
+.inter { --c: #1d5fa6; --bg: #edf3fb; }
+.proc  { --c: #17703f; --bg: #e9f5ed; }
+.piege { --c: #b42318; }
+.front { --c: #1b1b1b; }
+
+.top { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.5px solid #1b1b1b; padding-bottom: 1mm; margin-bottom: 3.2mm; }
+.top h1 { font-size: 16pt; margin: 0; line-height: 1.2; }
+.top span { white-space: nowrap; font-size: 10.5pt; }
+
+h2 { font-size: 12.5pt; margin: 0 0 0.6mm; color: var(--c); }
+h2 small { font-size: 10pt; font-weight: 400; color: #555; }
+.card { border: 1.5px solid var(--c); border-radius: 2.5mm; padding: 1.5mm 3.4mm 1.8mm; margin-bottom: 2.8mm; break-inside: avoid; }
+.salle { border: 0; border-left: 5px solid var(--c); background: var(--bg); border-radius: 0 2.5mm 2.5mm 0; }
+.front { border: 3.5px double #1b1b1b; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3.2mm; align-items: start; }
+.col > .card:last-child { margin-bottom: 2.8mm; }
+.tag { display: inline-block; text-indent: 0; font-weight: 700; color: #fff; background: var(--c); padding: 0 1.6mm; border-radius: 1.2mm; line-height: 1.3; }
+li { padding-left: 4.5mm; text-indent: -4.5mm; margin: 0.25mm 0; }
+li::before { content: "›"; display: inline-block; width: 4.5mm; text-indent: 0; font-weight: 700; color: var(--c); }
+.piege ul { counter-reset: p; }
+.piege li::before { content: counter(p) "."; counter-increment: p; }
+.k { font-weight: 700; }
+.m { font-weight: 700; color: var(--c); }
+.f { font-family: "Cambria Math", Cambria, "Times New Roman", serif; font-size: 1.05em; }
+
+.nav { display: none; }
+@media screen {
+  body { max-width: 820px; margin: 0 auto; padding: 14px 16px 30px; }
+  .nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; margin-bottom: 12px; }
+  .nav a { color: #1d5fa6; font-weight: 600; text-decoration: none; border: 1.5px solid #1d5fa6; border-radius: 999px; padding: 4px 12px; }
+  .page + .page { margin-top: 26px; padding-top: 16px; border-top: 3px dashed #bbb; }
+}
+@media screen and (max-width: 700px) {
+  .row { grid-template-columns: 1fr !important; }
+  .top { flex-direction: column; gap: 2px; }
+  .top span { white-space: normal; }
+}
+@media print { .nav { display: none !important; } }
+</style>
+</head>
+<body>
+<p class="nav"><a href="se-flashcards.html">Les flashcards</a></p>
+
+<!-- ============ RECTO : L'EXERCICE ============ -->
+<div class="page recto">
+
+<div class="top">
+  <h1>SE, recto : l'exercice (16 pts)</h1>
+  <span>Mémo de révision, 2AP</span>
+</div>
+
+<div class="card front">
+  <h2>Pour chaque algorithme, dans l'ordre</h2>
+  <ul>
+    <li class="k">Gantt → T<sub>i</sub> → T̄ → W<sub>i</sub> → W̄ → débit → rendement du CPU</li>
+  </ul>
+</div>
+
+<div class="card salle algo">
+  <h2>Qui passe ? <small>une ligne par algorithme</small></h2>
+  <ul>
+    <li><span class="k">FCFS</span> : le premier arrivé. Jamais coupé.</li>
+    <li><span class="k">SJF</span> : la plus courte durée. Jamais coupé.</li>
+    <li><span class="k">SRTF</span> : le plus court temps <span class="k">restant</span>. Coupe.</li>
+    <li><span class="k">Priorité non préemptive</span> : la plus haute priorité (1 ou Critique). Jamais coupé.</li>
+    <li><span class="k">Priorité préemptive</span> : la plus haute ; coupe dès qu'un plus prioritaire arrive.</li>
+    <li><span class="k">RR (quantum q)</span> : la file ; q secondes au plus, puis retour en fin de file.</li>
+  </ul>
+</div>
+
+<div class="row">
+  <div class="card front">
+    <h2>Frontière</h2>
+    <ul>
+      <li><span class="k">On coupe = préemptif</span> : SRTF, priorité préemptive, RR.</li>
+      <li>Tout le reste : non préemptif.</li>
+      <li><span class="k">Égalité</span> : le premier arrivé passe ; un égal ne coupe jamais.</li>
+    </ul>
+  </div>
+  <div class="card salle form">
+    <h2>Formules</h2>
+    <ul>
+      <li class="f"><span class="k">T<sub>i</sub> = F<sub>i</sub> − A<sub>i</sub></span> (fin − arrivée)</li>
+      <li class="f"><span class="k">W<sub>i</sub> = T<sub>i</sub> − C<sub>i</sub></span> (rotation − durée)</li>
+      <li>T̄ et W̄ : la <span class="k">moyenne</span> (÷ n), pas la somme</li>
+      <li><span class="k">débit</span> = terminés avant T<sub>obs</sub> ÷ T<sub>obs</sub></li>
+      <li><span class="k">rendement du CPU</span> = temps où il travaille ÷ T<sub>obs</sub></li>
+      <li>CPU ralenti : <span class="k">durée ÷ nouvelle perf.</span> (2 s à 82 % : 2 ÷ 0,82)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card piege">
+  <h2>7 pièges</h2>
+  <ul>
+    <li><span class="k">Débit</span> : tracer un trait à T<sub>obs</sub> et ne compter que les fins <span class="k">avant</span> le trait.</li>
+    <li><span class="k">Préemptif</span> : à chaque date d'arrivée, se demander si le nouveau passe devant.</li>
+    <li><span class="k">RR</span> : l'ordre d'<span class="k">entrée dans la file</span>, pas d'arrivée en RAM ; le processus coupé repart au bout.</li>
+    <li><span class="k">SJF ne coupe pas</span> : si on coupe, c'est du SRTF.</li>
+    <li>Un processus qui finit avant la fin de son quantum : le suivant démarre aussitôt.</li>
+    <li><span class="k">Vérif</span> : les morceaux de chaque processus = sa durée ; la fin du Gantt = la somme des durées (si le CPU n'est jamais vide).</li>
+    <li>CPU ralenti : on <span class="k">divise</span>, on ne multiplie jamais.</li>
+  </ul>
+</div>
+
+<div class="card salle form">
+  <h2>Le modèle 2025 <small>pour se caler</small></h2>
+  <ul>
+    <li>5 processus, T<sub>obs</sub> = 20 s, somme des durées = 24 s : <span class="k">pas tous finis à 20 s</span>.</li>
+    <li>FCFS : T̄ = 14,2 ; W̄ = 9,4 ; débit = 3/20 = 0,15 · rendement du CPU = 20/20 = 100 %.</li>
+  </ul>
+</div>
+
+</div>
+
+<!-- ============ VERSO : LE COURS ============ -->
+<div class="page">
+
+<div class="top">
+  <h1>SE, verso : le cours (4 pts)</h1>
+  <span>Une phrase du cours + un exemple</span>
+</div>
+
+<div class="row">
+  <div class="col">
+    <div class="card salle base">
+      <h2>Bases <small>diapos 1 à 43</small></h2>
+      <ul>
+        <li><span class="k">SE</span> : logiciel fondamental (ensemble de programmes) qui gère les ressources matérielles et logicielles. 3 rôles <span class="m">GIS</span> : <span class="k">G</span>érer sans conflit, <span class="k">I</span>nterface utilisateur-matériel, <span class="k">S</span>écurité.</li>
+        <li><span class="k">BIOS</span> : programme en ROM sur la carte mère, <span class="k">le 1er exécuté</span> : POST → périphériques → chargeur → SE.</li>
+        <li><span class="k">UAL</span> (unité de traitement) calcule : + − ET OU. <span class="k">Unité de commande</span> : lit, décode, fait exécuter (fetch-decode-execute).</li>
+        <li><span class="k">Registre</span> : petite mémoire dans le CPU. <span class="k">Cache</span> : petite mémoire rapide près du CPU. <span class="k">Horloge</span> : synchronise (MHz).</li>
+        <li><span class="k">Bus</span> <span class="m">quoi-où-comment</span> : données (↔), adresse (→, 2<sup>n</sup>), commande (signaux).</li>
+        <li><span class="k">Hyperviseur</span> : SE dans une machine virtuelle. Type 1 sur le métal nu (Hyper-V) ; type 2 invité dans un SE (VMware Workstation).</li>
+      </ul>
+    </div>
+    <div class="card salle mode">
+      <h2>4 modes <small>choisis par le SE, tout seul</small></h2>
+      <ul>
+        <li><span class="k">Séquentiel</span> direct : un humain entre chaque programme ; indirect : <span class="k">lots</span>, automatique.</li>
+        <li><span class="k">Multiprogrammation</span> classique : on change quand le programme <span class="k">attend une E/S</span> ; étendue : + pagination, segmentation.</li>
+        <li><span class="k">Temps partagé</span> : un <span class="k">quantum</span> chacun, on change même s'il n'est pas bloqué.</li>
+        <li><span class="k">Temps réel</span> : finir avant la <span class="k">deadline</span> (avion, FreeRTOS, QNX).</li>
+      </ul>
+    </div>
+    <div class="card salle archi">
+      <h2>4 architectures</h2>
+      <ul>
+        <li><span class="k">Monolithique</span> : un seul bloc, tout en mode noyau. UNIX, MS-DOS.</li>
+        <li><span class="k">En couches</span> : chaque couche n'utilise que celle du dessous. THE.</li>
+        <li><span class="k">Micro-noyau</span> : le minimum (ordonnancement, mémoire, IPC), le reste en espace utilisateur. Minix, QNX.</li>
+        <li><span class="k">Hybride</span> : rapide comme le monolithique, fiable comme le micro-noyau. Windows, macOS.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card salle inter">
+      <h2>Noyau, E/S, interruptions</h2>
+      <ul>
+        <li><span class="k">Noyau</span> : cœur du SE. <span class="m">P-M-P-F</span> : processus, mémoire, périphériques, fichiers.</li>
+        <li><span class="k">Pilote</span> : programme qui fait parler le SE et un périphérique (clavier).</li>
+        <li><span class="k">E/S</span> : le CPU <span class="m">demande</span> (programmées) → est <span class="m">prévenu</span> (interruptions) → <span class="m">délègue</span> (DMA). CPU de moins en moins sollicité, de plus en plus rapide.</li>
+        <li><span class="k">DMA</span> : composant matériel. Le CPU prépare → le DMA copie seul → <span class="k">interruption</span> de fin → le CPU vérifie.</li>
+        <li><span class="k">Interruption</span> : signal, attention immédiate. Types : matérielle, logicielle, horloge.</li>
+        <li>Niveaux <span class="m">panne > horloge > E/S > logicielle</span> (le timer passe avant le clavier).</li>
+        <li>Étapes, <span class="m">le marque-page</span> : détection → <span class="k">sauvegarde du contexte</span> → ISR → restauration → reprise.</li>
+        <li><span class="k">PIC</span> : le standardiste (priorité, masquage). <span class="k">ISR</span> : la routine qui traite.</li>
+        <li>5 fonctions <span class="m">réagir, communiquer, trier, sauvegarder, ordonnancer</span>.</li>
+      </ul>
+    </div>
+    <div class="card salle proc">
+      <h2>Processus</h2>
+      <ul>
+        <li><span class="k">Processus</span> : programme <span class="k">en cours d'exécution</span>, avec ses ressources. Programme passif, processus actif.</li>
+        <li><span class="k">Ordonnanceur</span> : choisit qui a le CPU et quand ; il <span class="k">utilise</span> un algorithme (RR).</li>
+        <li>Cycle, <span class="m">le guichet</span> : création → prêt (attend le <span class="k">CPU</span>) → exécution → attente (attend une <span class="k">ressource</span>) → fin.</li>
+        <li><span class="k">PCB</span> : sa carte d'identité. PID, état, compteur de programme, mémoire, ressources, priorité, temps CPU.</li>
+        <li><span class="k">Files</span> : prêts et bloqués. <span class="k">Table</span> : tous les PCB, rangés par PID.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>

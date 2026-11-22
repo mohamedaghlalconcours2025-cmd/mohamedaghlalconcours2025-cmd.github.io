@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcards CSI</title>
+<style>
+:root {
+  --bg: #f6f5f2; --card: #ffffff; --ink: #1b1b1b; --soft: #5d5d5d; --line: #dcd9d2;
+  --ok: #17703f; --ko: #b42318; --accent: #1d5fa6;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #15171a; --card: #1f2226; --ink: #ececec; --soft: #a3a3a3; --line: #34383d;
+          --ok: #4fbf7f; --ko: #ef6b5f; --accent: #6aa5e8; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif; background: var(--bg); color: var(--ink);
+  display: flex; flex-direction: column; align-items: center; padding: 16px;
+}
+.wrap { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+h1 { font-size: 20px; margin: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1.5px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px;
+  padding: 6px 12px; font-size: 14px; cursor: pointer;
+}
+.chip.on { border-color: var(--accent); background: var(--accent); color: #fff; }
+.stat { font-size: 14px; color: var(--soft); display: flex; justify-content: space-between; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.bar > div { height: 100%; width: 0; background: var(--ok); transition: width .25s; }
+.card {
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 22px 22px 26px;
+  min-height: 260px; cursor: pointer; display: flex; flex-direction: column; gap: 14px; user-select: none;
+}
+.bloc { font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--accent); }
+.q { font-size: 21px; font-weight: 600; line-height: 1.35; }
+.a { font-size: 18px; line-height: 1.5; border-top: 1.5px dashed var(--line); padding-top: 14px; display: none; }
+.a b { color: var(--accent); }
+.card.flip .a { display: block; }
+.hint { font-size: 13px; color: var(--soft); margin-top: auto; }
+.card.flip .hint { display: none; }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+button.big {
+  font: inherit; font-size: 17px; font-weight: 600; padding: 14px; border-radius: 12px; border: 0; cursor: pointer; color: #fff;
+}
+.ko { background: var(--ko); } .ok { background: var(--ok); }
+button.big:disabled { opacity: .35; cursor: default; }
+.end { text-align: center; display: none; flex-direction: column; gap: 12px; padding: 30px 0; }
+.end.show { display: flex; }
+.end p { font-size: 18px; margin: 0; }
+.link { font: inherit; background: none; border: 1.5px solid var(--line); color: var(--ink); padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.keys { font-size: 12px; color: var(--soft); text-align: center; }
+.mlink { font-size: 14px; font-weight: 600; margin-left: 10px; color: var(--accent); text-decoration: none; border: 1.5px solid var(--accent); border-radius: 999px; padding: 2px 10px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Flashcards CSI <a class="mlink" href="csi-memo.html">Le mémo</a></h1>
+  <div class="chips" id="chips"></div>
+  <div class="stat"><span id="pos"></span><span id="score"></span></div>
+  <div class="bar"><div id="bar"></div></div>
+
+  <div class="card" id="card">
+    <div class="bloc" id="bloc"></div>
+    <div class="q" id="q"></div>
+    <div class="a" id="a"></div>
+    <div class="hint">Réponds dans ta tête, puis touche la carte pour voir la réponse.</div>
+  </div>
+
+  <div class="btns" id="btns">
+    <button class="big ko" id="ko" disabled>À revoir</button>
+    <button class="big ok" id="okb" disabled>Je savais</button>
+  </div>
+
+  <div class="end" id="end">
+    <p id="endtxt"></p>
+    <button class="link" id="again">Refaire seulement les ratées</button>
+    <button class="link" id="restart">Tout recommencer</button>
+  </div>
+
+  <div class="keys">Clavier : espace = retourner · flèche droite = je savais · flèche gauche = à revoir</div>
+</div>
+
+<script>
+var CARDS = [
+ // ---------- MCC ----------
+ ["MCC","Quel est l'objectif du MCC ?","Représenter, au niveau conceptuel, les <b>échanges d'informations entre les acteurs</b> (la circulation des informations). C'est une 1re étape de l'étude de l'existant : il fixe les limites du domaine et ses flux d'entrée et de sortie."],
+ ["MCC","Les 3 concepts de base du MCC ?","Le <b>domaine d'étude</b>, l'<b>acteur</b> et le <b>flux</b>."],
+ ["MCC","Qu'est-ce que le domaine d'étude ?","Un <b>sous-ensemble du SI</b> étudié, avec une fonction bien délimitée : l'ensemble des activités faites par les acteurs internes. Exemple : « Gestion des ventes ». Rectangle à trait plein, le nom dedans."],
+ ["MCC","Qu'est-ce qu'un acteur ?","Une <b>personne, un service ou un organisme</b> qui émet ou reçoit des informations."],
+ ["MCC","Acteur interne ou externe : la différence ? Le dessin ?","Interne : <b>appartient au domaine</b>, cercle à <b>trait continu</b>. Externe : n'appartient pas au domaine mais échange avec lui (client, fournisseur, banque), cercle à <b>trait discontinu</b> (pointillés)."],
+ ["MCC","Qu'est-ce qu'un flux ?","Un <b>lot d'informations</b> échangé entre un acteur émetteur et un acteur récepteur, dont <b>au moins un est interne</b>. Flèche orientée de l'émetteur vers le récepteur, libellé au-dessus."],
+ ["MCC","Les 3 sortes de flux ? Laquelle dans le MCC ?","<b>Physique</b> (marchandise), <b>monétaire</b> (espèces, chèque), <b>information</b>. Le MCC représente l'<b>information</b>."],
+ ["MCC","Qu'est-ce que le diagramme de contexte ?","Il représente les flux échangés entre le <b>domaine d'étude</b> (un seul rectangle) et les <b>acteurs externes</b> seulement."],
+ ["MCC","Qu'est-ce que la matrice des flux ?","Un <b>tableau</b> qui décrit les flux échangés entre les acteurs : émetteurs en lignes, récepteurs en colonnes, le flux dans la case."],
+ ["MCC","Qu'est-ce que le graphe des flux ?","La <b>représentation graphique de la matrice des flux</b> : c'est le MCC, avec tous les acteurs et toutes les flèches."],
+ ["MCC","Les 4 étapes pour construire un MCC ?","1. Définir le <b>domaine</b>. 2. Repérer les <b>acteurs</b> et leur position (interne ou externe). 3. Repérer les flux entre le domaine et les <b>externes</b>. 4. Repérer les flux entre <b>internes</b>."],
+ ["MCC","Par quoi la prof commence-t-elle un exercice de MCC ?","Trois lignes : <b>Domaine d'étude</b> ; <b>Acteurs internes</b> ; <b>Acteurs externes</b>."],
+ ["MCC","Comment numérote-t-on les flux ?","Dans l'<b>ordre chronologique</b>, avec un numéro entouré à côté du libellé."],
+ ["MCC","Dans le MCC, dessine-t-on le rectangle du domaine ?","<b>Non</b>. Seulement les cercles (internes à trait plein, externes en pointillés) et les flèches. Le rectangle, c'est pour le diagramme de contexte."],
+
+ // ---------- Pièges MCC ----------
+ ["Pièges MCC","« Le client envoie la facture à son assurance, qui le rembourse. » Est-ce un flux du MCC ?","<b>Non</b> : client et assurance sont deux externes. L'assurance disparaît, puisqu'elle n'échange qu'avec le client."],
+ ["Pièges MCC","« L'agent consulte le fichier des clients. » Le fichier est-il un acteur ?","<b>Non</b> : on le consulte, il n'émet rien. Et consulter est un <b>traitement interne</b>, pas un flux."],
+ ["Pièges MCC","« L'opératrice archive le double de la facture. » Est-ce un flux ?","<b>Non</b> : c'est un traitement interne. Même chose pour vérifier, examiner, consulter, calculer, enregistrer."],
+ ["Pièges MCC","« Le client dépose son téléphone à l'accueil. » Quel libellé ?","L'information, pas l'objet : <b>Demande de réparation</b>."],
+ ["Pièges MCC","« Le client paie la facture. » Quel libellé, et dans quel sens ?","<b>Avis de règlement</b>, du client vers l'acteur interne qui encaisse."],
+ ["Pièges MCC","« Le magasin livre le colis au client. » Quel libellé ?","<b>Bon de livraison</b> (le colis est un objet)."],
+ ["Pièges MCC","« L'agent appelle le client pour lui dire que son téléphone est prêt. » Est-ce un flux ?","<b>Oui</b>. Un appel, un e-mail, une lettre ou un message oral est un flux dès qu'une information passe. Exemple : « Avis de fin de réparation »."],
+ ["Pièges MCC","« L'enseignant est nommé dans la convention de stage. » Est-ce un acteur ?","<b>Non</b> : il n'émet et ne reçoit rien. Il est seulement nommé."],
+ ["Pièges MCC","Les libellés préférés de la prof ?","« <b>Demande de</b> ... », « <b>Avis de</b> ... », « <b>Accord/Refus de</b> ... », « <b>Bon de</b> ... », « Facture »."],
+ ["Pièges MCC","Beaucoup d'acteurs internes, ou peu ?","<b>Peu</b> : la prof fusionne quand le texte le permet. Ex 2 : pas de gestionnaire de dossier. Ex 6 : pas de centre de stockage."],
+ ["Pièges MCC","Faut-il ajouter des flux internes que le texte ne dit pas ?","<b>Seulement s'il le faut</b> pour que l'information arrive (Ex 3 : l'offre de stage passe du responsable à la collaboratrice)."],
+ ["Pièges MCC","Un flux entre deux acteurs internes apparaît-il dans le contexte ?","<b>Non</b>. Le contexte ne montre que les flux avec les externes. Et chaque flux externe-interne du MCC doit y être."],
+ ["Pièges MCC","Avant de rendre un MCC, quelle vérification ?","Relire le texte <b>phrase par phrase</b>, <b>cocher chaque échange</b>, et vérifier que <b>chaque externe a ses flèches</b>."],
+
+ // ---------- MCD ----------
+ ["MCD","Qu'est-ce qu'une entité ?","Une <b>modélisation d'objets concrets ou abstraits</b> utilisés dans un système. Rectangle avec son nom. Exemples : Salarié, Salaire."],
+ ["MCD","Entité ou acteur : la différence ?","Acteur (MCC) : une personne, un service, un organisme qui <b>échange</b> des informations. Entité (MCD) : un <b>objet</b>, concret ou abstrait, sur lequel on garde des données."],
+ ["MCD","Qu'est-ce qu'une propriété (un attribut) ?","Une <b>caractéristique</b> d'une entité : une donnée élémentaire perçue sur une entité <b>ou une association</b>."],
+ ["MCD","Client, Commander, Produit : où écrit-on « Quantité » ?","Dans l'<b>ovale Commander</b> : la quantité ne décrit ni le client seul ni le produit seul, mais la commande entre les deux."],
+ ["MCD","Qu'est-ce qu'une occurrence ?","Un <b>cas réel de l'entité</b> : on ne dit pas « un client a passé la commande », mais « le client Adam a passé la commande N° 001 »."],
+ ["MCD","Qu'est-ce qu'un identifiant ?","Une ou plusieurs propriétés qui identifient <b>de manière unique</b> chaque occurrence d'une entité. On le <b>souligne</b>."],
+ ["MCD","Nom + prénom : bon identifiant ?","<b>Non</b> : deux personnes peuvent avoir les mêmes. On prend un N° CIN, un matricule, un code."],
+ ["MCD","Élève : Id_Eleve, Nom, Prénom, Date de naissance, Classe. L'identifiant ?","<b>Id_Eleve</b> : le seul qui est unique pour chaque élève."],
+ ["MCD","Qu'est-ce qu'une relation (association) ?","Elle <b>modélise le lien entre entités</b>. Ovale, nommé par un <b>verbe</b> (Acheter, Habiter), pas par un nom."],
+ ["MCD","Qu'est-ce que la dimension d'une relation ?","Le <b>nombre d'entités</b> qui participent à la relation."],
+ ["MCD","Relation réflexive, binaire, ternaire ?","<b>Réflexive</b> : 1 entité (Personne « est père de » Personne). <b>Binaire</b> : 2. <b>Ternaire</b> : 3 (Client, Voiture, MaisonDeVoiture autour d'Acheter)."],
+ ["MCD","Deux entités peuvent-elles avoir plusieurs relations entre elles ?","<b>Oui</b> : Personne « Posséder » Logement, et Personne « Louer » Logement."],
+ ["MCD","Qu'est-ce que le formalisme entité-association ?","Une représentation <b>graphique</b> des données d'un système, appelée aussi <b>MCD</b>."],
+
+ // ---------- Cardinalités ----------
+ ["Cardinalités","Qu'est-ce qu'une cardinalité ?","Elle traduit la <b>participation des occurrences d'une entité dans une relation</b>. Deux valeurs : un minimum et un maximum."],
+ ["Cardinalités","Les 4 valeurs possibles ?","<b>(0,1), (1,1), (0,n), (1,n)</b>. Rien d'autre."],
+ ["Cardinalités","Quelle question se poser ?","« Une occurrence de A est liée à <b>combien d'occurrences de B</b>, au minimum et au maximum ? »"],
+ ["Cardinalités","Min 0 ou 1 ? Max 1 ou n ?","Min : est-ce <b>obligatoire</b> ? 0 = non, 1 = oui. Max : <b>un seul ou plusieurs</b> ? 1 ou n."],
+ ["Cardinalités","De quel côté écrit-on la cardinalité ?","<b>Du côté de l'entité qu'elle décrit</b>."],
+ ["Cardinalités","Un salarié est affecté à un seul service ; un service a au moins un salarié.","Salarié <b>(1,1)</b> Être affecté <b>(1,n)</b> Service."],
+ ["Cardinalités","Un joueur appartient à une seule équipe ; une équipe a plusieurs joueurs.","Joueur <b>(1,1)</b> Appartenir <b>(1,n)</b> Équipe."],
+ ["Cardinalités","Un client commande au moins un produit ; un produit peut ne jamais être commandé.","Client <b>(1,n)</b> Commander <b>(0,n)</b> Produit."],
+ ["Cardinalités","Une personne peut n'avoir aucune voiture, ou plusieurs ; une voiture a un seul propriétaire.","Personne <b>(0,n)</b> Posséder <b>(1,1)</b> Voiture."],
+ ["Cardinalités","Une ville est la capitale d'aucun pays ou d'un seul ; un pays a une seule capitale.","Ville <b>(0,1)</b> Capitale de <b>(1,1)</b> Pays."],
+ ["Cardinalités","Une équipe a au moins 2 joueurs : peut-on écrire (2,n) ?","<b>Non</b> : seulement les 4 valeurs. « Plusieurs » donne <b>(1,n)</b>."],
+ ["Cardinalités","Le texte dit « un joueur appartient à une seule équipe » : (0,1) ou (1,1) ?","<b>(1,1)</b>. On ne met 0 que si le texte dit « peut ne pas » ou « aucun ». On n'invente pas."],
+ ["Cardinalités","Élève (1,1) Suivre (1,n) Responsable. Deux responsables peuvent-ils suivre un élève ?","<b>Non</b> : côté Élève, le max est 1."],
+ ["Cardinalités","Élève (1,1) Suivre (1,n) Responsable. Un responsable peut-il suivre plusieurs élèves ?","<b>Oui</b> : côté Responsable, le max est n."],
+ ["Cardinalités","Demande (1,1) Concerne (0,n) Matière. Une demande peut-elle concerner plusieurs matières ?","<b>Non</b> : côté Demande, le max est 1."],
+
+ // ---------- Dictionnaire ----------
+ ["Dictionnaire","Qu'est-ce que le dictionnaire de données ?","Un <b>tableau</b> qui donne, pour chaque propriété : son <b>nom (code)</b>, sa <b>signification</b>, son <b>type</b> et ses <b>règles</b>. Une ligne par propriété."],
+ ["Dictionnaire","Les colonnes dans la correction de la prof (diapo 127) ?","<b>N°, Code, Désignation, Type</b> de données. Le nombre de colonnes peut varier."],
+ ["Dictionnaire","Les types possibles ?","<b>Numérique, alphabétique</b> (texte), <b>alphanumérique</b> (lettres et chiffres), <b>date, monétaire</b>. Jamais « nom »."],
+ ["Dictionnaire","« Le nom du joueur » : quelle ligne dans le dictionnaire ?","Code <b>Nom_Joueur</b>, désignation « nom du joueur », type <b>alphabétique</b>."],
+ ["Dictionnaire","Qu'est-ce qu'un synonyme ? Que fait-on ?","Une <b>même donnée sous deux noms</b> (Code_client sur le bon de commande, Ref_client sur la facture). On n'en garde <b>qu'un</b> : une seule ligne."],
+ ["Dictionnaire","Qu'est-ce qu'un polysème ? Que fait-on ?","Un <b>même nom pour deux données différentes</b> (« nom » du client et « nom » du fournisseur). On ajoute le nom de l'entité : <b>nom_client, nom_fournisseur</b>."],
+ ["Dictionnaire","Du texte au MCD : les étapes ?","1. Le <b>dictionnaire</b> (toutes les données). 2. Les <b>règles de gestion</b> (les phrases qui donnent les liens). 3. Le <b>MCD</b> : entités et identifiants, puis relations, puis cardinalités."]
+];
+
+var BLOCS = ["Tout","MCC","Pièges MCC","MCD","Cardinalités","Dictionnaire"];
+var bloc = "Tout", deck = [], i = 0, firstOk = 0, total = 0, missed = [], flipped = false;
+var $ = function (id) { return document.getElementById(id); };
+
+function shuffle(a) { for (var k = a.length - 1; k > 0; k--) { var j = Math.floor(Math.random() * (k + 1)); var t = a[k]; a[k] = a[j]; a[j] = t; } return a; }
+
+function start(list) {
+  deck = shuffle(list.map(function (c) { return { c: c, tries: 0 }; }));
+  i = 0; firstOk = 0; total = deck.length; missed = [];
+  $("end").classList.remove("show"); $("card").style.display = ""; $("btns").style.display = "";
+  show();
+}
+function pick(b) {
+  bloc = b; drawChips();
+  start(CARDS.filter(function (c) { return b === "Tout" || c[0] === b; }));
+}
+function drawChips() {
+  $("chips").innerHTML = "";
+  BLOCS.forEach(function (b) {
+    var n = b === "Tout" ? CARDS.length : CARDS.filter(function (c) { return c[0] === b; }).length;
+    var el = document.createElement("button");
+    el.className = "chip" + (b === bloc ? " on" : ""); el.textContent = b + " (" + n + ")";
+    el.onclick = function () { pick(b); };
+    $("chips").appendChild(el);
+  });
+}
+function show() {
+  if (i >= deck.length) return finish();
+  var c = deck[i].c; flipped = false;
+  $("card").classList.remove("flip");
+  $("bloc").textContent = c[0]; $("q").innerHTML = c[1]; $("a").innerHTML = c[2];
+  $("ko").disabled = true; $("okb").disabled = true;
+  $("pos").textContent = "Carte " + Math.min(i + 1, deck.length) + " / " + deck.length;
+  $("score").textContent = "Réussies du premier coup : " + firstOk + " / " + total;
+  $("bar").style.width = (100 * i / deck.length) + "%";
+}
+function flip() {
+  if (i >= deck.length) return;
+  flipped = !flipped; $("card").classList.toggle("flip", flipped);
+  $("ko").disabled = !flipped; $("okb").disabled = !flipped;
+}
+function answer(ok) {
+  if (!flipped || i >= deck.length) return;
+  var d = deck[i];
+  if (ok) { if (d.tries === 0) firstOk++; }
+  else { d.tries++; if (missed.indexOf(d.c) < 0) missed.push(d.c); deck.push({ c: d.c, tries: d.tries }); }
+  i++; show();
+}
+function finish() {
+  $("card").style.display = "none"; $("btns").style.display = "none";
+  $("bar").style.width = "100%";
+  $("pos").textContent = "Terminé"; $("score").textContent = "";
+  $("endtxt").innerHTML = "Réussies du premier coup : <b>" + firstOk + " / " + total + "</b>" +
+    (missed.length ? "<br>" + missed.length + " carte(s) ratée(s) au moins une fois." : "<br>Aucune erreur.");
+  $("again").style.display = missed.length ? "" : "none";
+  $("end").classList.add("show");
+}
+$("card").onclick = flip;
+$("ko").onclick = function () { answer(false); };
+$("okb").onclick = function () { answer(true); };
+$("again").onclick = function () { start(missed.slice()); };
+$("restart").onclick = function () { pick(bloc); };
+document.addEventListener("keydown", function (e) {
+  if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); }
+  else if (e.key === "ArrowRight") answer(true);
+  else if (e.key === "ArrowLeft") answer(false);
+});
+pick("Tout");
+</script>
+</body>
+</html>

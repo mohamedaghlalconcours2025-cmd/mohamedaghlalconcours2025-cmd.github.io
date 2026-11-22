@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSI : mémo de révision</title>
+<style>
+@page { size: A4; margin: 9mm 11mm; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", Calibri, Arial, sans-serif;
+  font-size: 11pt; line-height: 1.36; color: #1b1b1b; background: #fff;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.page { break-after: page; }
+.recto { font-size: 11.6pt; line-height: 1.38; }
+.recto .card { margin-bottom: 3mm; }
+.recto h2 { font-size: 13pt; }
+.verso { font-size: 12.4pt; line-height: 1.42; }
+.verso h2 { font-size: 13.2pt; }
+.verso .card { margin-bottom: 3.4mm; }
+.page:last-child { break-after: auto; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+.algo  { --c: #1d5fa6; --bg: #edf3fb; }
+.form  { --c: #17703f; --bg: #e9f5ed; }
+.base  { --c: #6b3fa0; --bg: #f3eefa; }
+.mode  { --c: #b26a00; --bg: #fdf3e4; }
+.archi { --c: #0f7c86; --bg: #e6f5f6; }
+.inter { --c: #1d5fa6; --bg: #edf3fb; }
+.proc  { --c: #17703f; --bg: #e9f5ed; }
+.piege { --c: #b42318; }
+.front { --c: #1b1b1b; }
+
+.top { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2.5px solid #1b1b1b; padding-bottom: 1mm; margin-bottom: 3.2mm; }
+.top h1 { font-size: 16pt; margin: 0; line-height: 1.2; }
+.top span { white-space: nowrap; font-size: 10.5pt; }
+
+h2 { font-size: 12.5pt; margin: 0 0 0.6mm; color: var(--c); }
+h2 small { font-size: 10pt; font-weight: 400; color: #555; }
+.card { border: 1.5px solid var(--c); border-radius: 2.5mm; padding: 1.5mm 3.4mm 1.8mm; margin-bottom: 2.8mm; break-inside: avoid; }
+.salle { border: 0; border-left: 5px solid var(--c); background: var(--bg); border-radius: 0 2.5mm 2.5mm 0; }
+.front { border: 3.5px double #1b1b1b; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 3.2mm; align-items: start; }
+li { padding-left: 4.5mm; text-indent: -4.5mm; margin: 0.25mm 0; }
+li::before { content: "›"; display: inline-block; width: 4.5mm; text-indent: 0; font-weight: 700; color: var(--c); }
+.piege ul { counter-reset: p; }
+.piege li::before { content: counter(p) "."; counter-increment: p; }
+.k { font-weight: 700; }
+.m { font-weight: 700; color: var(--c); }
+.c { font-family: Consolas, "Courier New", monospace; font-size: 0.95em; }
+
+.nav { display: none; }
+@media screen {
+  body { max-width: 820px; margin: 0 auto; padding: 14px 16px 30px; }
+  .nav { display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; margin-bottom: 12px; }
+  .nav a { color: #1d5fa6; font-weight: 600; text-decoration: none; border: 1.5px solid #1d5fa6; border-radius: 999px; padding: 4px 12px; }
+  .page + .page { margin-top: 26px; padding-top: 16px; border-top: 3px dashed #bbb; }
+}
+@media screen and (max-width: 700px) {
+  .row { grid-template-columns: 1fr !important; }
+  .top { flex-direction: column; gap: 2px; }
+  .top span { white-space: normal; }
+}
+@media print { .nav { display: none !important; } }
+</style>
+</head>
+<body>
+<p class="nav"><a href="csi-flashcards.html">Les flashcards</a></p>
+
+<!-- ============ RECTO : L'EXERCICE (MCC) ============ -->
+<div class="page recto">
+
+<div class="top">
+  <h1>CSI, recto : l'exercice (MCC)</h1>
+  <span>Mémo de révision, 2AP</span>
+</div>
+
+<div class="card front">
+  <h2>Dans l'ordre</h2>
+  <ul>
+    <li class="k">Domaine → internes → externes → flux numérotés → contexte → MCC → relire le texte et cocher</li>
+  </ul>
+</div>
+
+<div class="card salle algo">
+  <h2>Les 3 lignes de départ <small>comme la prof</small></h2>
+  <ul>
+    <li><span class="k">Domaine d'étude</span> : « <span class="k">Gestion des</span> ... » (sa fonction). L'ensemble des activités faites par les internes.</li>
+    <li><span class="k">Acteurs internes</span> : dans le domaine (services, employés). <span class="k">Peu</span> : la prof fusionne quand le texte le permet.</li>
+    <li><span class="k">Acteurs externes</span> : hors du domaine, mais échangent avec lui (client, fournisseur, banque).</li>
+  </ul>
+</div>
+
+<div class="row">
+  <div class="card salle form">
+    <h2>Flux</h2>
+    <ul>
+      <li>Lot d'informations entre un <span class="k">émetteur</span> et un <span class="k">récepteur</span>, dont <span class="k">au moins un interne</span>.</li>
+      <li>Flèche émetteur → récepteur, libellé au-dessus, <span class="k">numéro entouré</span> (ordre chronologique).</li>
+      <li>Un appel, un e-mail, une lettre, un message oral : <span class="k">c'est un flux</span>.</li>
+    </ul>
+  </div>
+  <div class="card salle mode">
+    <h2>L'information, pas l'objet</h2>
+    <ul>
+      <li>téléphone déposé → <span class="k">Demande de réparation</span></li>
+      <li>argent, chèque → <span class="k">Avis de règlement</span></li>
+      <li>colis, marchandise → <span class="k">Bon de livraison</span></li>
+      <li>Ses libellés : <span class="m">Demande de, Avis de, Accord/Refus de, Bon de</span></li>
+    </ul>
+  </div>
+</div>
+
+<div class="card salle archi">
+  <h2>Dessin</h2>
+  <ul>
+    <li><span class="k">Diagramme de contexte</span> : le domaine dans un <span class="k">rectangle à trait plein</span>, seulement les <span class="k">externes</span> et leurs flux.</li>
+    <li><span class="k">MCC</span> (graphe des flux) : <span class="k">pas de rectangle</span> ; interne = cercle à trait plein ; externe = cercle en pointillés ; tous les flux.</li>
+    <li><span class="k">Matrice des flux</span> : un tableau, émetteurs en lignes, récepteurs en colonnes, le flux dans la case.</li>
+  </ul>
+</div>
+
+<div class="card piege">
+  <h2>Pièges</h2>
+  <ul>
+    <li><span class="k">Oublier un acteur ou un flux</span>. À la fin, relire le texte phrase par phrase, cocher chaque échange, et vérifier que chaque externe a ses flèches.</li>
+    <li><span class="k">Entre deux externes</span> (client → assurance) : pas de flux. L'acteur disparaît s'il ne parle qu'à des externes.</li>
+    <li>Vérifier, examiner, consulter, calculer, archiver : <span class="k">traitements internes</span>, pas des flux.</li>
+    <li>Un fichier, une base de données, une personne seulement nommée : <span class="k">pas des acteurs</span>.</li>
+    <li>Contexte : chaque flux externe-interne du MCC y figure ; un flux <span class="k">entre deux internes, jamais</span>.</li>
+    <li>Flux interne déduit : seulement <span class="k">s'il faut</span> pour que l'information arrive.</li>
+  </ul>
+</div>
+
+<div class="card salle proc">
+  <h2>L'exemple du cours <small>la vente</small></h2>
+  <ul>
+    <li>Internes : service commercial, service comptabilité, magasin. Externe : client.</li>
+    <li>Commande, Bon de commande, Facture, Avis de règlement, Règlement effectué, Bon de sortie, Bon de livraison.</li>
+  </ul>
+</div>
+
+</div>
+
+<!-- ============ VERSO : LE COURS (MCD) ============ -->
+<div class="page verso">
+
+<div class="top">
+  <h1>CSI, verso : le cours (MCD)</h1>
+  <span>Une phrase du cours + un exemple</span>
+</div>
+
+<div class="row">
+  <div class="col">
+    <div class="card salle base">
+      <h2>Les 5 mots</h2>
+      <ul>
+        <li><span class="k">Entité</span> : une modélisation d'objets concrets ou abstraits utilisés dans un système. Rectangle. Salarié, Salaire. <span class="k">Pas un acteur.</span></li>
+        <li><span class="k">Propriété (attribut)</span> : une caractéristique ; une donnée élémentaire perçue sur une entité <span class="k">ou une association</span> (Quantité dans Commander).</li>
+        <li><span class="k">Occurrence</span> : un cas réel de l'entité (le client Adam). Classe → instance.</li>
+        <li><span class="k">Identifiant</span> : une ou plusieurs propriétés qui identifient <span class="k">de manière unique</span> chaque occurrence. Souligné. N° CIN, matricule. <span class="k">Jamais nom + prénom.</span></li>
+        <li><span class="k">Relation (association)</span> : modélise le lien entre entités. Ovale + <span class="k">verbe</span> (Acheter).</li>
+      </ul>
+    </div>
+    <div class="card salle mode">
+      <h2>Dimension <small>nombre d'entités</small></h2>
+      <ul>
+        <li><span class="m">1 réflexive</span> : Personne « est père de » Personne.</li>
+        <li><span class="m">2 binaire</span>. <span class="m">3 ternaire</span> : Client, Voiture, MaisonDeVoiture (Acheter).</li>
+        <li>Plusieurs relations entre les mêmes entités : Posséder et Louer.</li>
+      </ul>
+    </div>
+    <div class="card salle archi">
+      <h2>Dictionnaire de données</h2>
+      <ul>
+        <li>Un tableau, <span class="k">une ligne par propriété</span> : N°, Code (<span class="c">Nom_Joueur</span>), Désignation, Type (+ Règles).</li>
+        <li>Types : numérique, alphabétique, alphanumérique, date, monétaire.</li>
+        <li><span class="k">Synonymes</span> (Code_client = Ref_client) : un seul nom.</li>
+        <li><span class="k">Polysèmes</span> (« nom » du client et du fournisseur) : <span class="c">nom_client</span>, <span class="c">nom_fournisseur</span>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card salle inter">
+      <h2>Cardinalités</h2>
+      <ul>
+        <li>La participation des occurrences d'une entité dans une relation : <span class="k">(min, max)</span>.</li>
+        <li><span class="k">4 valeurs seulement</span> : (0,1) (1,1) (0,n) (1,n). Jamais 2.</li>
+        <li>min : obligatoire ? 0 non, 1 oui. max : un seul ou plusieurs ? 1 ou n.</li>
+        <li>« Une occurrence de A est liée à combien de B, au min et au max ? » → écrite <span class="k">du côté de A</span>.</li>
+        <li>Suivre le texte : « une seule » = (1,1) ; « plusieurs » = (1,n) ; 0 seulement si « peut ne pas », « aucun ».</li>
+      </ul>
+    </div>
+    <div class="card salle proc">
+      <h2>Exemples</h2>
+      <ul>
+        <li>Salarié (1,1) Être affecté (1,n) Service</li>
+        <li>Joueur (1,1) Appartenir (1,n) Équipe</li>
+        <li>Client (1,n) Commander (0,n) Produit</li>
+        <li>Personne (0,n) Posséder (1,1) Voiture</li>
+        <li>Ville (0,1) Capitale de (1,1) Pays</li>
+      </ul>
+    </div>
+    <div class="card salle form">
+      <h2>Lire un MCD, puis le faire</h2>
+      <ul>
+        <li>« A peut-il avoir plusieurs B ? » Lire le max du côté de A : 1 = non, n = oui.</li>
+        <li>Texte → MCD : 1 dictionnaire ; 2 règles de gestion (les phrases qui donnent les liens) ; 3 entités + identifiants → relations → cardinalités.</li>
+      </ul>
+    </div>
+    <div class="card piege">
+      <h2>Pièges MCD</h2>
+      <ul>
+        <li>Entité ≠ acteur. Attribut = caractéristique.</li>
+        <li>Nom + prénom n'est pas un identifiant.</li>
+        <li>Pas de (2,n), pas de 0 inventé.</li>
+        <li>Le type n'est jamais « nom ». La relation est un verbe.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</body>
+</html>
